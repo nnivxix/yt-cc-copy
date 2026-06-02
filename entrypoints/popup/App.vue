@@ -1,47 +1,75 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 type Status = "idle" | "loading" | "success" | "error";
+type NoteStatus = "idle" | "saved" | "copied" | "error";
 
 const status = ref<Status>("idle");
 const message = ref("");
+const noteText = ref("");
+const noteStatus = ref<NoteStatus>("idle");
+const noteMessage = ref("");
+
+/** Use the YouTube video ID (?v=) as the storage key, falling back to the full URL. */
+function videoKey(url: string): string {
+  try {
+    return new URL(url).searchParams.get("v") ?? url;
+  } catch {
+    return url;
+  }
+}
+
+async function getActiveYouTubeTab() {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || !tab.url?.includes("youtube.com")) return null;
+  return tab;
+}
+
+async function loadNote() {
+  const tab = await getActiveYouTubeTab();
+  if (!tab?.url) return;
+  const key = videoKey(tab.url);
+  const stored = await browser.storage.local.get(key);
+  noteText.value = (stored[key] as string) ?? "";
+}
+
+async function getCC(): Promise<string | null> {
+  const tab = await getActiveYouTubeTab();
+  if (!tab) {
+    status.value = "error";
+    message.value = "Open a YouTube video first";
+    return null;
+  }
+
+  const response = await browser.tabs.sendMessage(tab.id!, {
+    action: "GET_CC",
+  });
+
+  if (!response) {
+    status.value = "error";
+    message.value = "Could not reach the page. Try refreshing.";
+    return null;
+  }
+
+  if (!response.ok) {
+    status.value = "error";
+    message.value =
+      response.reason === "CC_DISABLED"
+        ? "Please enable CC on this video first"
+        : "No captions visible right now";
+    return null;
+  }
+
+  return response.text as string;
+}
 
 async function copyCC() {
   status.value = "loading";
   message.value = "";
-
   try {
-    const [tab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-
-    if (!tab?.id || !tab.url?.includes("youtube.com")) {
-      status.value = "error";
-      message.value = "Open a YouTube video first";
-      return;
-    }
-
-    const response = await browser.tabs.sendMessage(tab.id, {
-      action: "GET_CC",
-    });
-
-    if (!response) {
-      status.value = "error";
-      message.value = "Could not reach the page. Try refreshing.";
-      return;
-    }
-
-    if (!response.ok) {
-      status.value = "error";
-      message.value =
-        response.reason === "CC_DISABLED"
-          ? "Please enable CC on this video first"
-          : "No captions visible right now";
-      return;
-    }
-
-    await navigator.clipboard.writeText(response.text);
+    const text = await getCC();
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
     status.value = "success";
     message.value = "Copied!";
   } catch {
@@ -49,19 +77,83 @@ async function copyCC() {
     message.value = "Something went wrong. Try again.";
   }
 }
+
+async function saveToNote() {
+  status.value = "loading";
+  message.value = "";
+  noteStatus.value = "idle";
+  noteMessage.value = "";
+  try {
+    const tab = await getActiveYouTubeTab();
+    if (!tab?.url) {
+      status.value = "error";
+      message.value = "Open a YouTube video first";
+      return;
+    }
+    const text = await getCC();
+    if (!text) return;
+
+    const key = videoKey(tab.url);
+    const existing =
+      ((await browser.storage.local.get(key))[key] as string) ?? "";
+    const updated = existing ? `${existing}\n${text}` : text;
+
+    await browser.storage.local.set({ [key]: updated });
+    noteText.value = updated;
+    status.value = "idle";
+    noteStatus.value = "saved";
+    noteMessage.value = "Saved to note!";
+  } catch {
+    status.value = "error";
+    message.value = "Something went wrong. Try again.";
+  }
+}
+
+async function copyNote() {
+  if (!noteText.value) return;
+  try {
+    await navigator.clipboard.writeText(noteText.value);
+    noteStatus.value = "copied";
+    noteMessage.value = "Note copied!";
+  } catch {
+    noteStatus.value = "error";
+    noteMessage.value = "Failed to copy note.";
+  }
+}
+
+async function clearNote() {
+  const tab = await getActiveYouTubeTab();
+  if (!tab?.url) return;
+  await browser.storage.local.remove(videoKey(tab.url));
+  noteText.value = "";
+  noteStatus.value = "idle";
+  noteMessage.value = "";
+}
+
+onMounted(loadNote);
 </script>
 
 <template>
   <div class="container">
     <h2 class="title">YT CC Copy</h2>
-    <button
-      class="copy-btn"
-      :class="{ loading: status === 'loading' }"
-      :disabled="status === 'loading'"
-      @click="copyCC"
-    >
-      {{ status === "loading" ? "Copying…" : "Copy Captions" }}
-    </button>
+
+    <div class="btn-row">
+      <button
+        class="btn btn-primary"
+        :disabled="status === 'loading'"
+        @click="copyCC"
+      >
+        {{ status === "loading" ? "…" : "Copy CC" }}
+      </button>
+      <button
+        class="btn btn-secondary"
+        :disabled="status === 'loading'"
+        @click="saveToNote"
+      >
+        Save to Note
+      </button>
+    </div>
+
     <p
       v-if="message"
       class="message"
@@ -69,6 +161,38 @@ async function copyCC() {
     >
       {{ message }}
     </p>
+
+    <div class="note-section">
+      <div class="note-header">
+        <span class="note-label">Note</span>
+        <button v-if="noteText" class="btn-ghost" @click="clearNote">
+          Clear
+        </button>
+      </div>
+
+      <textarea
+        class="note-area"
+        :value="noteText"
+        readonly
+        placeholder="Nothing saved yet for this video."
+      />
+
+      <div class="note-footer">
+        <p
+          v-if="noteMessage"
+          class="message"
+          :class="{
+            success: noteStatus === 'saved' || noteStatus === 'copied',
+            error: noteStatus === 'error',
+          }"
+        >
+          {{ noteMessage }}
+        </p>
+        <button class="btn btn-primary" :disabled="!noteText" @click="copyNote">
+          Copy Note
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -76,54 +200,152 @@ async function copyCC() {
 .container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px 20px;
+  gap: 12px;
+  padding: 20px 16px;
 }
 
 .title {
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1.05em;
   font-weight: 600;
   letter-spacing: 0.02em;
+  text-align: center;
 }
 
-.copy-btn {
-  width: 100%;
-  padding: 10px 0;
-  font-size: 0.95em;
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  padding: 9px 0;
+  font-size: 0.9em;
   font-weight: 600;
   border-radius: 8px;
   border: none;
-  background: #ff0000;
-  color: #fff;
   cursor: pointer;
   transition:
     background 0.2s,
     opacity 0.2s;
 }
 
-.copy-btn:hover:not(:disabled) {
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #ff0000;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
   background: #cc0000;
 }
 
-.copy-btn.loading,
-.copy-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-secondary {
+  background: #333;
+  color: #fff;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #444;
 }
 
 .message {
   margin: 0;
-  font-size: 0.88em;
+  font-size: 0.85em;
   text-align: center;
 }
 
 .message.success {
   color: #4caf50;
 }
-
 .message.error {
   color: #f44336;
+}
+
+.note-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #333;
+  padding-top: 12px;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.note-label {
+  font-size: 0.82em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.btn-ghost {
+  background: none;
+  border: none;
+  font-size: 0.82em;
+  cursor: pointer;
+  opacity: 0.55;
+  color: inherit;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+
+.btn-ghost:hover {
+  opacity: 1;
+}
+
+.note-area {
+  width: 100%;
+  height: 110px;
+  resize: none;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.82em;
+  padding: 8px;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.note-footer .btn {
+  flex: none;
+  padding: 7px 14px;
+}
+
+@media (prefers-color-scheme: light) {
+  .btn-secondary {
+    background: #e0e0e0;
+    color: #111;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: #ccc;
+  }
+  .note-area {
+    background: #f5f5f5;
+    border-color: #ccc;
+    color: #213547;
+  }
+  .note-section {
+    border-top-color: #ddd;
+  }
 }
 </style>
