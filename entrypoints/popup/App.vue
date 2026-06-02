@@ -1,134 +1,19 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
+import { useCc } from "../../composable/useCc";
+import { useNote } from "../../composable/useNote";
+import { videoKey, getActiveYouTubeTab } from "../../utils";
 
-type Status = "idle" | "loading" | "success" | "error";
-type NoteStatus = "idle" | "saved" | "copied" | "error";
-
-const status = ref<Status>("idle");
-const message = ref("");
-const noteText = ref("");
-const noteStatus = ref<NoteStatus>("idle");
-const noteMessage = ref("");
-
-/** Use the YouTube video ID (?v=) as the storage key, falling back to the full URL. */
-function videoKey(url: string): string {
-  try {
-    return new URL(url).searchParams.get("v") ?? url;
-  } catch {
-    return url;
-  }
-}
-
-async function getActiveYouTubeTab() {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id || !tab.url?.includes("youtube.com")) return null;
-  return tab;
-}
-
-async function loadNote() {
-  const tab = await getActiveYouTubeTab();
-  if (!tab?.url) return;
-  const key = videoKey(tab.url);
-  const stored = await browser.storage.local.get(key);
-  noteText.value = (stored[key] as string) ?? "";
-}
-
-async function getCC(): Promise<string | null> {
-  const tab = await getActiveYouTubeTab();
-  if (!tab) {
-    status.value = "error";
-    message.value = "Open a YouTube video first";
-    return null;
-  }
-
-  const response = await browser.tabs.sendMessage(tab.id!, {
-    action: "GET_CC",
-  });
-
-  if (!response) {
-    status.value = "error";
-    message.value = "Could not reach the page. Try refreshing.";
-    return null;
-  }
-
-  if (!response.ok) {
-    status.value = "error";
-    message.value =
-      response.reason === "CC_DISABLED"
-        ? "Please enable CC on this video first"
-        : "No captions visible right now";
-    return null;
-  }
-
-  return response.text as string;
-}
-
-async function copyCC() {
-  status.value = "loading";
-  message.value = "";
-  try {
-    const text = await getCC();
-    if (!text) return;
-    await navigator.clipboard.writeText(text);
-    status.value = "success";
-    message.value = "Copied!";
-  } catch {
-    status.value = "error";
-    message.value = "Something went wrong. Try again.";
-  }
-}
-
-async function saveToNote() {
-  status.value = "loading";
-  message.value = "";
-  noteStatus.value = "idle";
-  noteMessage.value = "";
-  try {
-    const tab = await getActiveYouTubeTab();
-    if (!tab?.url) {
-      status.value = "error";
-      message.value = "Open a YouTube video first";
-      return;
-    }
-    const text = await getCC();
-    if (!text) return;
-
-    const key = videoKey(tab.url);
-    const existing =
-      ((await browser.storage.local.get(key))[key] as string) ?? "";
-    const updated = existing ? `${existing}\n${text}` : text;
-
-    await browser.storage.local.set({ [key]: updated });
-    noteText.value = updated;
-    status.value = "idle";
-    noteStatus.value = "saved";
-    noteMessage.value = "Saved to note!";
-  } catch {
-    status.value = "error";
-    message.value = "Something went wrong. Try again.";
-  }
-}
-
-async function copyNote() {
-  if (!noteText.value) return;
-  try {
-    await navigator.clipboard.writeText(noteText.value);
-    noteStatus.value = "copied";
-    noteMessage.value = "Note copied!";
-  } catch {
-    noteStatus.value = "error";
-    noteMessage.value = "Failed to copy note.";
-  }
-}
-
-async function clearNote() {
-  const tab = await getActiveYouTubeTab();
-  if (!tab?.url) return;
-  await browser.storage.local.remove(videoKey(tab.url));
-  noteText.value = "";
-  noteStatus.value = "idle";
-  noteMessage.value = "";
-}
+const { getCC, status, message, copyCC } = useCc();
+const {
+  noteText,
+  noteStatus,
+  noteMessage,
+  saveToNote,
+  copyNote,
+  clearNote,
+  loadNote,
+} = useNote();
 
 onMounted(loadNote);
 </script>
@@ -182,7 +67,7 @@ onMounted(loadNote);
           v-if="noteMessage"
           class="message"
           :class="{
-            success: noteStatus === 'saved' || noteStatus === 'copied',
+            success: noteStatus === 'success',
             error: noteStatus === 'error',
           }"
         >
