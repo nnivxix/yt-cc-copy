@@ -4,11 +4,10 @@ import { defineConfig } from "wxt";
 export default defineConfig({
   modules: ["@wxt-dev/module-vue"],
   manifest: {
-    email: "hi@hanasa.id",
     name: "YouTube CC Copy",
     description: "Copy YouTube closed captions (CC) to clipboard",
-    version: "0.0.1",
+    version: "0.0.2",
     short_name: "YT CC Copy",
-    permissions: ["storage"],
+    permissions: ["storage", "tabs"],
   },
 });

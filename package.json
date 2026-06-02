@@ -1,8 +1,8 @@
 {
-  "name": "wxt-vue-starter",
-  "description": "manifest.json description",
+  "name": "yt-cc-copy",
+  "description": "Copy YouTube closed captions (CC) to clipboard",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "wxt",
