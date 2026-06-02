@@ -14,9 +14,14 @@ export const useCc = () => {
       return null;
     }
 
-    const response = await browser.tabs.sendMessage(tab.id!, {
-      action: "GET_CC",
-    });
+    let response;
+    try {
+      response = await browser.tabs.sendMessage(tab.id!, { action: "GET_CC" });
+    } catch {
+      status.value = "error";
+      message.value = "Could not reach the page. Try refreshing.";
+      return null;
+    }
 
     if (!response) {
       status.value = "error";

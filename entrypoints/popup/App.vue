@@ -57,7 +57,7 @@ onMounted(loadNote);
 
       <textarea
         class="note-area"
-        :value="noteText"
+        v-model="noteText"
         readonly
         placeholder="Nothing saved yet for this video."
       />
