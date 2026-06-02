@@ -1,7 +1,74 @@
-# WXT + Vue 3
+# YT CC Copy
 
-This template should help get you started developing with Vue 3 in WXT.
+A browser extension that lets you copy YouTube closed captions (CC) to your clipboard and save them as notes per video.
 
-## Recommended IDE Setup
+## Download
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar).
+<!-- <p align="center">
+    <a href="#">
+        <img src="path/to/chrome-web-store-badge.png" alt="Chrome Web Store">
+    </a> 
+    <a href="#">
+        <img src="path/to/firefox-add-ons-badge.png" alt="Firefox Add-ons">
+    </a>
+</p> -->
+
+## Development
+
+1. Clone the repository and install dependencies:
+
+   ```sh
+   pnpm install
+   ```
+
+2. Start the development server:
+
+   ```sh
+   pnpm dev
+   ```
+
+   This will open a browser with the extension loaded automatically.
+
+## Chromium Installation (Manual)
+
+1. Build the extension:
+
+   ```sh
+   pnpm build
+   ```
+
+   This will create a `.output/chrome-mv3` directory with the necessary files.
+
+2. Open Chromium and navigate to `chrome://extensions`.
+3. Enable **Developer mode** in the top right corner.
+4. Click **Load unpacked** and select the `.output/chrome-mv3` directory.
+
+## Firefox Installation (Manual)
+
+1. Build the extension for Firefox:
+
+   ```sh
+   pnpm build:firefox
+   ```
+
+   This will create a `.output/firefox-mv2` directory with the necessary files.
+
+2. Open Firefox and navigate to `about:debugging`.
+3. Click **This Firefox** then **Load Temporary Add-on**.
+4. Select the `manifest.json` file from the `.output/firefox-mv2` directory.
+
+## Usage
+
+1. Open a YouTube video and enable CC (closed captions).
+2. Click the extension icon in the toolbar.
+3. Click **Copy CC** to copy the current visible captions to your clipboard.
+4. Click **Save to Note** to append captions to a per-video note.
+5. Use **Copy Note** to copy the full saved note, or **Clear** to remove it.
+
+## Contributing
+
+Feel free to submit issues or pull requests to improve the extension.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
