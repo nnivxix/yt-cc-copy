@@ -9,5 +9,14 @@ export default defineConfig({
     version: "0.0.2",
     short_name: "YT CC Copy",
     permissions: ["storage", "tabs"],
+    browser_specific_settings: {
+      gecko: {
+        id: "yt-cc-copy@hanasa",
+        data_collection_permissions: {
+          required: ["none"],
+          optional: [],
+        },
+      },
+    },
   },
 });

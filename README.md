@@ -4,14 +4,14 @@ A browser extension that lets you copy YouTube closed captions (CC) to your clip
 
 ## Download
 
-<!-- <p align="center">
-    <a href="#">
-        <img src="path/to/chrome-web-store-badge.png" alt="Chrome Web Store">
+<p align="center">
+    <a href="https://chromewebstore.google.com/detail/youtube-cc-copy/phogekaakimfbfjolkjcnlbjdoipjgnf?authuser=0&hl=en" target="_blank">
+        <img src="https://github.com/nnivxix/yt-cc-copy/blob/main/assets/chrome-extension.png?raw=true" alt="Chrome Web Store">
     </a> 
-    <a href="#">
-        <img src="path/to/firefox-add-ons-badge.png" alt="Firefox Add-ons">
+    <a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-cc-copy/" target="_blank">
+        <img src="https://github.com/nnivxix/yt-cc-copy/blob/main/assets/firefox-add-ons.png?raw=true" alt="Firefox Add-ons">
     </a>
-</p> -->
+</p>
 
 ## Development
 
