@@ -4,12 +4,12 @@ import { useCc } from "../../composable/useCc";
 import { useNote } from "../../composable/useNote";
 import { videoKey, getActiveYouTubeTab } from "../../utils";
 
-const { getCC, status, message, copyCCStatus, copyCC } = useCc();
+const { getCC, status, message, ccCopied, copyCC } = useCc();
 const {
   noteText,
   noteStatus,
   noteMessage,
-  copyNoteStatus,
+  noteCopied,
   saveToNote,
   copyNote,
   clearNote,
@@ -21,7 +21,7 @@ onMounted(loadNote);
 
 <template>
   <div class="container">
-    <h2 class="title">YT CC Copy (DEV)</h2>
+    <h2 class="title">YT CC Copy</h2>
 
     <div class="btn-row">
       <button
@@ -29,13 +29,7 @@ onMounted(loadNote);
         :disabled="status === 'loading'"
         @click="copyCC"
       >
-        {{
-          status === "loading"
-            ? "…"
-            : copyCCStatus === "success"
-              ? "Copied"
-              : "Copy CC"
-        }}
+        {{ status === "loading" ? "…" : ccCopied ? "Copied" : "Copy CC" }}
       </button>
       <button
         class="btn btn-secondary"
@@ -57,13 +51,12 @@ onMounted(loadNote);
       <textarea
         class="note-area"
         v-model="noteText"
-        readonly
         placeholder="Nothing saved yet for this video."
       />
 
       <div class="note-footer">
         <button class="btn btn-primary" :disabled="!noteText" @click="copyNote">
-          {{ copyNoteStatus === "success" ? "Copied" : "Copy Note" }}
+          {{ noteCopied ? "Copied" : "Copy Note" }}
         </button>
       </div>
     </div>

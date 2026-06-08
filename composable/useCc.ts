@@ -1,11 +1,12 @@
 import { ref } from "vue";
 import { browser } from "wxt/browser";
 import { getActiveYouTubeTab } from "../utils";
+import { useCopy } from "./useCopy";
 
 export const useCc = () => {
   const status = ref<"idle" | "loading" | "success" | "error">("idle");
   const message = ref("");
-  const copyCCStatus = ref<"idle" | "success" | "error">("idle");
+  const { copied: ccCopied, copy } = useCopy();
 
   async function getCC(): Promise<string | null> {
     const tab = await getActiveYouTubeTab();
@@ -61,21 +62,22 @@ export const useCc = () => {
     try {
       const text = await getCC();
       if (!text) return;
-      await navigator.clipboard.writeText(text);
-      copyCCStatus.value = "success";
-      setTimeout(() => {
-        copyCCStatus.value = "idle";
-      }, 3000);
-      showMessage("Copied!", "success");
+      const ok = await copy(text);
+      status.value = "idle";
+      if (!ok) showMessage("Something went wrong. Try again.", "error");
     } catch {
       showMessage("Something went wrong. Try again.", "error");
+    } finally {
+      if (status.value === "loading") {
+        status.value = "idle";
+      }
     }
   }
 
   return {
     status,
     message,
-    copyCCStatus,
+    ccCopied,
     copyCC,
     getCC,
   };

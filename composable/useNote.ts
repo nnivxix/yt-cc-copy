@@ -2,16 +2,17 @@ import { ref } from "vue";
 import { browser } from "wxt/browser";
 import { getActiveYouTubeTab, videoKey } from "../utils";
 import { useCc } from "./useCc";
+import { useCopy } from "./useCopy";
 import { Status } from "../schema";
 
 export const useNote = () => {
   const { getCC } = useCc();
+  const { copied: noteCopied, copy } = useCopy();
   const noteText = ref("");
   const status = ref<Status>("idle");
   const message = ref("");
   const noteStatus = ref<Status>("idle");
   const noteMessage = ref("");
-  const copyNoteStatus = ref<Status>("idle");
 
   function showNoteMessage(msg: string, s: Status) {
     noteStatus.value = s;
@@ -62,18 +63,7 @@ export const useNote = () => {
 
   async function copyNote() {
     if (!noteText.value) return;
-    try {
-      await navigator.clipboard.writeText(noteText.value);
-      copyNoteStatus.value = "success";
-      setTimeout(() => {
-        copyNoteStatus.value = "idle";
-      }, 3000);
-    } catch {
-      copyNoteStatus.value = "error";
-      setTimeout(() => {
-        copyNoteStatus.value = "idle";
-      }, 3000);
-    }
+    await copy(noteText.value);
   }
 
   async function clearNote() {
@@ -97,7 +87,7 @@ export const useNote = () => {
     message,
     noteStatus,
     noteMessage,
-    copyNoteStatus,
+    noteCopied,
     noteText,
     saveToNote,
     copyNote,
