@@ -5,19 +5,22 @@ import { useCopy } from "./useCopy";
 
 export const useCc = () => {
   const status = ref<"idle" | "loading" | "success" | "error">("idle");
+  const errorMessage = ref("");
   const { copied: ccCopied, copy } = useCopy();
 
-  function setTemporaryStatus(s: "success" | "error") {
-    status.value = s;
+  function setError(message: string) {
+    status.value = "error";
+    errorMessage.value = message;
     setTimeout(() => {
       status.value = "idle";
+      errorMessage.value = "";
     }, 3000);
   }
 
   async function getCC(): Promise<string | null> {
     const tab = await getActiveYouTubeTab();
     if (!tab) {
-      setTemporaryStatus("error");
+      setError("Open a YouTube video first");
       return null;
     }
 
@@ -25,17 +28,21 @@ export const useCc = () => {
     try {
       response = await browser.tabs.sendMessage(tab.id!, { action: "GET_CC" });
     } catch {
-      setTemporaryStatus("error");
+      setError("Could not reach the page. Try refreshing.");
       return null;
     }
 
     if (!response) {
-      setTemporaryStatus("error");
+      setError("Could not reach the page. Try refreshing.");
       return null;
     }
 
     if (!response.ok) {
-      setTemporaryStatus("error");
+      setError(
+        response.reason === "CC_DISABLED"
+          ? "Please enable CC on this video first"
+          : "No captions visible right now",
+      );
       return null;
     }
 
@@ -44,6 +51,7 @@ export const useCc = () => {
 
   async function copyCC() {
     status.value = "loading";
+    errorMessage.value = "";
     try {
       const text = await getCC();
       if (!text) {
@@ -53,15 +61,16 @@ export const useCc = () => {
 
       const ok = await copy(text);
       status.value = "idle";
-      if (!ok) setTemporaryStatus("error");
+      if (!ok) setError("Failed to copy captions. Please try again.");
     } catch {
       status.value = "idle";
-      setTemporaryStatus("error");
+      setError("Something went wrong. Please try again.");
     }
   }
 
   return {
     status,
+    errorMessage,
     ccCopied,
     copyCC,
     getCC,

@@ -6,10 +6,11 @@ import { useCopy } from "./useCopy";
 import { Status } from "../schema";
 
 export const useNote = () => {
-  const { getCC } = useCc();
+  const { getCC, errorMessage: ccErrorMessage } = useCc();
   const { copied: noteCopied, copy } = useCopy();
   const noteText = ref("");
   const status = ref<Status>("idle");
+  const errorMessage = ref("");
   const noteStatus = ref<Status>("idle");
 
   function setTemporaryNoteStatus(s: Status) {
@@ -19,24 +20,32 @@ export const useNote = () => {
     }, 3000);
   }
 
-  function setTemporaryMainStatus(s: Status) {
-    status.value = s;
+  function setMainError(message: string) {
+    status.value = "error";
+    errorMessage.value = message;
     setTimeout(() => {
       status.value = "idle";
+      errorMessage.value = "";
     }, 3000);
   }
 
   async function saveToNote() {
     status.value = "loading";
+    errorMessage.value = "";
     noteStatus.value = "idle";
     try {
       const tab = await getActiveYouTubeTab();
       if (!tab?.url) {
-        setTemporaryMainStatus("error");
+        setMainError("Open a YouTube video first");
         return;
       }
       const text = await getCC();
-      if (!text) return;
+      if (!text) {
+        if (ccErrorMessage.value) {
+          setMainError(ccErrorMessage.value);
+        }
+        return;
+      }
 
       const key = videoKey(tab.url);
       const existing =
@@ -48,7 +57,7 @@ export const useNote = () => {
       status.value = "idle";
       setTemporaryNoteStatus("success");
     } catch {
-      setTemporaryMainStatus("error");
+      setMainError("Something went wrong. Please try again.");
     }
   }
 
@@ -74,6 +83,7 @@ export const useNote = () => {
 
   return {
     status,
+    errorMessage,
     noteStatus,
     noteCopied,
     noteText,

@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useCc } from "./composables/useCc";
 import { useNote } from "./composables/useNote";
 
-const { status, ccCopied, copyCC } = useCc();
+const { status, errorMessage: ccErrorMessage, ccCopied, copyCC } = useCc();
 const {
+  errorMessage: noteErrorMessage,
   noteText,
   noteStatus,
   noteCopied,
@@ -13,6 +14,10 @@ const {
   clearNote,
   loadNote,
 } = useNote();
+
+const errorText = computed(
+  () => ccErrorMessage.value || noteErrorMessage.value,
+);
 
 onMounted(loadNote);
 </script>
@@ -59,6 +64,9 @@ onMounted(loadNote);
         </button>
       </div>
       <div class="footer-message">
+        <p v-if="errorText" class="error-text">
+          {{ errorText }}
+        </p>
         <p>
           Report issues or request features on
           <a
@@ -217,5 +225,10 @@ onMounted(loadNote);
 .footer-message {
   font-size: 12px;
   font-weight: 200;
+}
+
+.error-text {
+  color: #f44336;
+  margin: 4px 0 0;
 }
 </style>
