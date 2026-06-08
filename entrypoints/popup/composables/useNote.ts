@@ -2,30 +2,50 @@ import { ref } from "vue";
 import { browser } from "wxt/browser";
 import { getActiveYouTubeTab, videoKey } from "../utils";
 import { useCc } from "./useCc";
+import { useCopy } from "./useCopy";
 import { Status } from "../schema";
 
 export const useNote = () => {
-  const { getCC } = useCc();
+  const { getCC, errorMessage: ccErrorMessage } = useCc();
+  const { copied: noteCopied, copy } = useCopy();
   const noteText = ref("");
   const status = ref<Status>("idle");
-  const message = ref("");
+  const errorMessage = ref("");
   const noteStatus = ref<Status>("idle");
-  const noteMessage = ref("");
+
+  function setTemporaryNoteStatus(s: Status) {
+    noteStatus.value = s;
+    setTimeout(() => {
+      noteStatus.value = "idle";
+    }, 3000);
+  }
+
+  function setMainError(message: string) {
+    status.value = "error";
+    errorMessage.value = message;
+    setTimeout(() => {
+      status.value = "idle";
+      errorMessage.value = "";
+    }, 3000);
+  }
 
   async function saveToNote() {
     status.value = "loading";
-    message.value = "";
+    errorMessage.value = "";
     noteStatus.value = "idle";
-    noteMessage.value = "";
     try {
       const tab = await getActiveYouTubeTab();
       if (!tab?.url) {
-        status.value = "error";
-        message.value = "Open a YouTube video first";
+        setMainError("Open a YouTube video first");
         return;
       }
       const text = await getCC();
-      if (!text) return;
+      if (!text) {
+        if (ccErrorMessage.value) {
+          setMainError(ccErrorMessage.value);
+        }
+        return;
+      }
 
       const key = videoKey(tab.url);
       const existing =
@@ -35,24 +55,15 @@ export const useNote = () => {
       await browser.storage.local.set({ [key]: updated });
       noteText.value = updated;
       status.value = "idle";
-      noteStatus.value = "success";
-      noteMessage.value = "Saved to note!";
+      setTemporaryNoteStatus("success");
     } catch {
-      status.value = "error";
-      message.value = "Something went wrong. Try again.";
+      setMainError("Something went wrong. Please try again.");
     }
   }
 
   async function copyNote() {
     if (!noteText.value) return;
-    try {
-      await navigator.clipboard.writeText(noteText.value);
-      noteStatus.value = "success";
-      noteMessage.value = "Note copied!";
-    } catch {
-      noteStatus.value = "error";
-      noteMessage.value = "Failed to copy note.";
-    }
+    await copy(noteText.value);
   }
 
   async function clearNote() {
@@ -61,7 +72,6 @@ export const useNote = () => {
     await browser.storage.local.remove(videoKey(tab.url));
     noteText.value = "";
     noteStatus.value = "idle";
-    noteMessage.value = "";
   }
   async function loadNote() {
     const tab = await getActiveYouTubeTab();
@@ -73,9 +83,9 @@ export const useNote = () => {
 
   return {
     status,
-    message,
+    errorMessage,
     noteStatus,
-    noteMessage,
+    noteCopied,
     noteText,
     saveToNote,
     copyNote,
