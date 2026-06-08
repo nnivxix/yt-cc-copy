@@ -1,14 +1,12 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
-import { useCc } from "../../composable/useCc";
-import { useNote } from "../../composable/useNote";
-import { videoKey, getActiveYouTubeTab } from "../../utils";
+import { onMounted } from "vue";
+import { useCc } from "./composables/useCc";
+import { useNote } from "./composables/useNote";
 
-const { getCC, status, message, ccCopied, copyCC } = useCc();
+const { getCC, status, ccCopied, copyCC } = useCc();
 const {
   noteText,
   noteStatus,
-  noteMessage,
   noteCopied,
   saveToNote,
   copyNote,
@@ -36,7 +34,7 @@ onMounted(loadNote);
         :disabled="status === 'loading'"
         @click="saveToNote"
       >
-        {{ noteStatus === "success" ? "Saved" : "Save" }}
+        {{ noteStatus === "success" ? "Added" : "Add to Note" }}
       </button>
     </div>
 
@@ -51,6 +49,7 @@ onMounted(loadNote);
       <textarea
         class="note-area"
         v-model="noteText"
+        readonly
         placeholder="Nothing saved yet for this video."
       />
 
