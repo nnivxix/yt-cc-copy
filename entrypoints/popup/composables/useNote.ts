@@ -10,33 +10,29 @@ export const useNote = () => {
   const { copied: noteCopied, copy } = useCopy();
   const noteText = ref("");
   const status = ref<Status>("idle");
-  const message = ref("");
   const noteStatus = ref<Status>("idle");
-  const noteMessage = ref("");
 
-  function showNoteMessage(msg: string, s: Status) {
+  function setTemporaryNoteStatus(s: Status) {
     noteStatus.value = s;
-    noteMessage.value = msg;
     setTimeout(() => {
-      noteMessage.value = "";
       noteStatus.value = "idle";
+    }, 3000);
+  }
+
+  function setTemporaryMainStatus(s: Status) {
+    status.value = s;
+    setTimeout(() => {
+      status.value = "idle";
     }, 3000);
   }
 
   async function saveToNote() {
     status.value = "loading";
-    message.value = "";
     noteStatus.value = "idle";
-    noteMessage.value = "";
     try {
       const tab = await getActiveYouTubeTab();
       if (!tab?.url) {
-        status.value = "error";
-        message.value = "Open a YouTube video first";
-        setTimeout(() => {
-          message.value = "";
-          status.value = "idle";
-        }, 3000);
+        setTemporaryMainStatus("error");
         return;
       }
       const text = await getCC();
@@ -50,14 +46,9 @@ export const useNote = () => {
       await browser.storage.local.set({ [key]: updated });
       noteText.value = updated;
       status.value = "idle";
-      showNoteMessage("Saved to note!", "success");
+      setTemporaryNoteStatus("success");
     } catch {
-      status.value = "error";
-      message.value = "Something went wrong. Try again.";
-      setTimeout(() => {
-        message.value = "";
-        status.value = "idle";
-      }, 3000);
+      setTemporaryMainStatus("error");
     }
   }
 
@@ -72,7 +63,6 @@ export const useNote = () => {
     await browser.storage.local.remove(videoKey(tab.url));
     noteText.value = "";
     noteStatus.value = "idle";
-    noteMessage.value = "";
   }
   async function loadNote() {
     const tab = await getActiveYouTubeTab();
@@ -84,9 +74,7 @@ export const useNote = () => {
 
   return {
     status,
-    message,
     noteStatus,
-    noteMessage,
     noteCopied,
     noteText,
     saveToNote,

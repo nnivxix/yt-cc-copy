@@ -3,7 +3,7 @@ import { onMounted } from "vue";
 import { useCc } from "./composables/useCc";
 import { useNote } from "./composables/useNote";
 
-const { getCC, status, ccCopied, copyCC } = useCc();
+const { status, ccCopied, copyCC } = useCc();
 const {
   noteText,
   noteStatus,
@@ -58,7 +58,7 @@ onMounted(loadNote);
           {{ noteCopied ? "Copied" : "Copy Note" }}
         </button>
       </div>
-      <div>
+      <div class="footer-message">
         <p>
           Report issues or request features on
           <a
@@ -128,19 +128,6 @@ onMounted(loadNote);
 
 .btn-secondary:hover:not(:disabled) {
   background: #444;
-}
-
-.message {
-  margin: 0;
-  font-size: 0.85em;
-  text-align: center;
-}
-
-.message.success {
-  color: #4caf50;
-}
-.message.error {
-  color: #f44336;
 }
 
 .note-section {
@@ -225,5 +212,10 @@ onMounted(loadNote);
   .note-section {
     border-top-color: #ddd;
   }
+}
+
+.footer-message {
+  font-size: 12px;
+  font-weight: 200;
 }
 </style>
