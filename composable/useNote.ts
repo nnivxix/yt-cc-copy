@@ -11,6 +11,16 @@ export const useNote = () => {
   const message = ref("");
   const noteStatus = ref<Status>("idle");
   const noteMessage = ref("");
+  const copyNoteStatus = ref<Status>("idle");
+
+  function showNoteMessage(msg: string, s: Status) {
+    noteStatus.value = s;
+    noteMessage.value = msg;
+    setTimeout(() => {
+      noteMessage.value = "";
+      noteStatus.value = "idle";
+    }, 3000);
+  }
 
   async function saveToNote() {
     status.value = "loading";
@@ -22,6 +32,10 @@ export const useNote = () => {
       if (!tab?.url) {
         status.value = "error";
         message.value = "Open a YouTube video first";
+        setTimeout(() => {
+          message.value = "";
+          status.value = "idle";
+        }, 3000);
         return;
       }
       const text = await getCC();
@@ -35,11 +49,14 @@ export const useNote = () => {
       await browser.storage.local.set({ [key]: updated });
       noteText.value = updated;
       status.value = "idle";
-      noteStatus.value = "success";
-      noteMessage.value = "Saved to note!";
+      showNoteMessage("Saved to note!", "success");
     } catch {
       status.value = "error";
       message.value = "Something went wrong. Try again.";
+      setTimeout(() => {
+        message.value = "";
+        status.value = "idle";
+      }, 3000);
     }
   }
 
@@ -47,11 +64,15 @@ export const useNote = () => {
     if (!noteText.value) return;
     try {
       await navigator.clipboard.writeText(noteText.value);
-      noteStatus.value = "success";
-      noteMessage.value = "Note copied!";
+      copyNoteStatus.value = "success";
+      setTimeout(() => {
+        copyNoteStatus.value = "idle";
+      }, 3000);
     } catch {
-      noteStatus.value = "error";
-      noteMessage.value = "Failed to copy note.";
+      copyNoteStatus.value = "error";
+      setTimeout(() => {
+        copyNoteStatus.value = "idle";
+      }, 3000);
     }
   }
 
@@ -76,6 +97,7 @@ export const useNote = () => {
     message,
     noteStatus,
     noteMessage,
+    copyNoteStatus,
     noteText,
     saveToNote,
     copyNote,

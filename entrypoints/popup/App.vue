@@ -4,11 +4,12 @@ import { useCc } from "../../composable/useCc";
 import { useNote } from "../../composable/useNote";
 import { videoKey, getActiveYouTubeTab } from "../../utils";
 
-const { getCC, status, message, copyCC } = useCc();
+const { getCC, status, message, copyCCStatus, copyCC } = useCc();
 const {
   noteText,
   noteStatus,
   noteMessage,
+  copyNoteStatus,
   saveToNote,
   copyNote,
   clearNote,
@@ -20,7 +21,7 @@ onMounted(loadNote);
 
 <template>
   <div class="container">
-    <h2 class="title">YT CC Copy</h2>
+    <h2 class="title">YT CC Copy (DEV)</h2>
 
     <div class="btn-row">
       <button
@@ -28,24 +29,22 @@ onMounted(loadNote);
         :disabled="status === 'loading'"
         @click="copyCC"
       >
-        {{ status === "loading" ? "…" : "Copy CC" }}
+        {{
+          status === "loading"
+            ? "…"
+            : copyCCStatus === "success"
+              ? "Copied"
+              : "Copy CC"
+        }}
       </button>
       <button
         class="btn btn-secondary"
         :disabled="status === 'loading'"
         @click="saveToNote"
       >
-        Save to Note
+        {{ noteStatus === "success" ? "Saved" : "Save" }}
       </button>
     </div>
-
-    <p
-      v-if="message"
-      class="message"
-      :class="{ success: status === 'success', error: status === 'error' }"
-    >
-      {{ message }}
-    </p>
 
     <div class="note-section">
       <div class="note-header">
@@ -63,18 +62,8 @@ onMounted(loadNote);
       />
 
       <div class="note-footer">
-        <p
-          v-if="noteMessage"
-          class="message"
-          :class="{
-            success: noteStatus === 'success',
-            error: noteStatus === 'error',
-          }"
-        >
-          {{ noteMessage }}
-        </p>
         <button class="btn btn-primary" :disabled="!noteText" @click="copyNote">
-          Copy Note
+          {{ copyNoteStatus === "success" ? "Copied" : "Copy Note" }}
         </button>
       </div>
     </div>
@@ -208,6 +197,7 @@ onMounted(loadNote);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: row;
   gap: 8px;
 }
 
