@@ -6,7 +6,7 @@ export default defineConfig({
   manifest: {
     name: "YouTube CC Copy",
     description: "Copy YouTube closed captions (CC) to clipboard",
-    version: "0.0.2",
+    version: "0.0.3",
     short_name: "YT CC Copy",
     permissions: ["storage", "tabs"],
     browser_specific_settings: {

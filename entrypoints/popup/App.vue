@@ -58,6 +58,17 @@ onMounted(loadNote);
           {{ noteCopied ? "Copied" : "Copy Note" }}
         </button>
       </div>
+      <div>
+        <p>
+          Report issues or request features on
+          <a
+            href="https://github.com/nnivxix/yt-cc-copy/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub</a
+          >
+        </p>
+      </div>
     </div>
   </div>
 </template>
