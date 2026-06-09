@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YT CC Copy | Privacy Policy</title>
+    <link rel="icon" href="./favicon.ico" />
+    <meta
+      name="description"
+      content="Privacy policy for YT CC Copy — a browser extension that copies YouTube closed captions locally with no data collection."
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <site-header page="privacy"></site-header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <p class="eyebrow">Legal</p>
+          <h1>Privacy Policy</h1>
+          <p class="lead">Last updated: June 8, 2026</p>
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="container">
+          <h2>Overview</h2>
+          <p>
+            YT CC Copy is a browser extension that helps you copy YouTube closed
+            captions and save per-video notes. We built it with privacy as a
+            default — the extension collects no personal data and makes no
+            network requests of its own.
+          </p>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="data">
+        <div class="container">
+          <h2>Data Stored Locally</h2>
+          <p>
+            When you use the "Save to Note" feature, caption text is stored
+            using <code>browser.storage.local</code> — a storage area that
+            exists entirely on your own device. Notes are keyed by YouTube video
+            ID and never transmitted to any server, third party, or developer.
+          </p>
+          <p>
+            You can remove saved note data at any time using the Clear action
+            inside the extension popup. Uninstalling the extension removes all
+            locally stored data.
+          </p>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="permissions">
+        <div class="container">
+          <h2>Permissions Used</h2>
+          <div class="feature-grid">
+            <article class="card">
+              <h3>storage</h3>
+              <p>
+                Used exclusively to save and retrieve per-video caption notes on
+                your local device. No data leaves your browser.
+              </p>
+            </article>
+            <article class="card">
+              <h3>tabs</h3>
+              <p>
+                Used to detect which YouTube tab is currently active so the
+                extension can read captions from the correct page. No tab
+                history or browsing data is collected or stored.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="tracking">
+        <div class="container">
+          <h2>No Analytics or Tracking</h2>
+          <p>
+            YT CC Copy contains no analytics, telemetry, crash reporting, or
+            advertising code. There are no third-party scripts bundled with the
+            extension. Your usage patterns, browsing history, and clipboard
+            contents are never observed or recorded by us.
+          </p>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="changes">
+        <div class="container">
+          <h2>Changes to This Policy</h2>
+          <p>
+            If this privacy policy changes, the updated version will be
+            published in the
+            <a
+              href="https://github.com/nnivxix/yt-cc-copy"
+              target="_blank"
+              rel="noreferrer"
+              >GitHub repository</a
+            >
+            alongside the relevant release notes. The "Last updated" date at the
+            top of this page will reflect the most recent revision.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <site-footer page="privacy"></site-footer>
+    <script src="./index.js" type="module"></script>
+  </body>
+</html>

@@ -40,20 +40,7 @@
     />
   </head>
   <body>
-    <header class="site-header" id="top">
-      <div class="container nav">
-        <a class="brand" href="#top" aria-label="YT CC Copy home">YT CC Copy</a>
-        <nav aria-label="Primary navigation">
-          <ul class="nav-list">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#install">Install</a></li>
-            <!-- <li><a href="#screenshots">Screenshots</a></li> -->
-            <li><a href="#faq">FAQ</a></li>
-            <!-- <li><a href="#contact">Contact</a></li> -->
-          </ul>
-        </nav>
-      </div>
-    </header>
+    <site-header></site-header>
 
     <main>
       <section class="hero">
@@ -73,8 +60,18 @@
                 href="https://github.com/nnivxix/yt-cc-copy"
                 target="_blank"
                 rel="noreferrer"
-                >View on GitHub</a
-              >
+                >View on GitHub
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h7v2H5v14h14v-7h2v7q0 .825-.587 1.413T19 21zm4.7-5.3l-1.4-1.4L17.6 5H14V3h7v7h-2V6.4z"
+                  /></svg
+              ></a>
             </div>
           </div>
         </div>
@@ -222,16 +219,7 @@
       </section>
     </main>
 
-    <footer class="site-footer" id="contact">
-      <div class="container footer-row">
-        <p>Built for fast caption workflows on YouTube.</p>
-        <a
-          href="https://github.com/nnivxix/yt-cc-copy"
-          target="_blank"
-          rel="noreferrer"
-          >GitHub Repository</a
-        >
-      </div>
-    </footer>
+    <site-footer></site-footer>
+    <script src="./index.js" type="module"></script>
   </body>
 </html>
