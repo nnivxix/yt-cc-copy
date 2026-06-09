@@ -10,8 +10,10 @@ class SiteFooter extends HTMLElement {
     this.innerHTML = `
       <footer class="site-footer" id="contact">
         <div class="container footer-row">
-          <p>&copy; ${new Date().getFullYear()} YT CC Copy. All rights reserved.</p>
-          <p>Built for fast caption workflows on YouTube.</p>
+          <div>
+            <p style="font-size:14px;">&copy; ${new Date().getFullYear()} YT CC Copy. All rights reserved.</p>
+            <p>Built for fast caption workflows on YouTube.</p>
+          </div>
           <nav aria-label="Footer navigation">
             <ul class="nav-list">
               <li><a href="${prefix}#features">Features</a></li>
