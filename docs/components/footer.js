@@ -10,6 +10,7 @@ class SiteFooter extends HTMLElement {
     this.innerHTML = `
       <footer class="site-footer" id="contact">
         <div class="container footer-row">
+          <p>&copy; ${new Date().getFullYear()} YT CC Copy. All rights reserved.</p>
           <p>Built for fast caption workflows on YouTube.</p>
           <nav aria-label="Footer navigation">
             <ul class="nav-list">
