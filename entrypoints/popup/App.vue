@@ -3,6 +3,8 @@ import { computed, onMounted } from "vue";
 import { useCc } from "./composables/useCc";
 import { useNote } from "./composables/useNote";
 
+const url = browser.runtime.getURL("/index.html");
+
 const { status, errorMessage: ccErrorMessage, ccCopied, copyCC } = useCc();
 const {
   errorMessage: noteErrorMessage,
@@ -74,6 +76,11 @@ onMounted(loadNote);
             target="_blank"
             rel="noopener noreferrer"
             >GitHub.</a
+          >
+        </p>
+        <p>
+          <a :href="url" target="_blank" rel="noopener noreferrer"
+            >Manage Notes</a
           >
         </p>
       </div>

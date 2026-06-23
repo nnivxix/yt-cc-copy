@@ -1,8 +1,8 @@
 import { ref } from "vue";
-import { browser } from "wxt/browser";
 import { getActiveYouTubeTab, videoKey } from "../utils";
 import { useCc } from "./useCc";
 import { useCopy } from "./useCopy";
+import { getNote, saveNote, deleteNote } from "../../../utils/storage";
 import { Status } from "../schema";
 
 export const useNote = () => {
@@ -48,11 +48,10 @@ export const useNote = () => {
       }
 
       const key = videoKey(tab.url);
-      const existing =
-        ((await browser.storage.local.get(key))[key] as string) ?? "";
-      const updated = existing ? `${existing}\n${text}` : text;
+      const existing = await getNote(key);
+      const updated = existing ? `${existing.text}\n${text}` : text;
 
-      await browser.storage.local.set({ [key]: updated });
+      await saveNote(key, updated);
       noteText.value = updated;
       status.value = "idle";
       setTemporaryNoteStatus("success");
@@ -69,16 +68,18 @@ export const useNote = () => {
   async function clearNote() {
     const tab = await getActiveYouTubeTab();
     if (!tab?.url) return;
-    await browser.storage.local.remove(videoKey(tab.url));
+    const key = videoKey(tab.url);
+    await deleteNote(key);
     noteText.value = "";
     noteStatus.value = "idle";
   }
+
   async function loadNote() {
     const tab = await getActiveYouTubeTab();
     if (!tab?.url) return;
     const key = videoKey(tab.url);
-    const stored = await browser.storage.local.get(key);
-    noteText.value = (stored[key] as string) ?? "";
+    const data = await getNote(key);
+    noteText.value = data?.text ?? "";
   }
 
   return {
