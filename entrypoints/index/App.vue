@@ -33,7 +33,7 @@ function openNote(videoId: string) {
   const url = browser.runtime.getURL(
     `/note.html?id=${encodeURIComponent(videoId)}`,
   );
-  browser.tabs.create({ url });
+  browser.tabs.update({ url });
 }
 
 function thumbnailUrl(videoId: string): string {

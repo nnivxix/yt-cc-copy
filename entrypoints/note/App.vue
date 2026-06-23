@@ -115,7 +115,7 @@ async function handleDelete() {
 }
 
 function handleBack() {
-  window.close();
+  window.history.back();
 }
 
 const hasChanges = computed(() => {
@@ -136,11 +136,7 @@ onMounted(loadNote);
 
     <template v-else-if="note">
       <div class="note-header">
-        <img
-          :src="thumbnailUrl(videoId)"
-          alt="thumbnail"
-          class="thumb"
-        />
+        <img :src="thumbnailUrl(videoId)" alt="thumbnail" class="thumb" />
         <div class="note-meta">
           <h1 class="video-title">
             {{ titleLoading ? "Loading title…" : note.title || "Untitled" }}
@@ -165,10 +161,7 @@ onMounted(loadNote);
         >
           {{ saving ? "Saving…" : "Save" }}
         </button>
-        <button
-          class="btn btn-secondary"
-          @click="handleCopy"
-        >
+        <button class="btn btn-secondary" @click="handleCopy">
           {{ copied ? "Copied" : "Copy" }}
         </button>
         <button
