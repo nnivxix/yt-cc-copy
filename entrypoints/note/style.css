@@ -41,6 +41,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 720px;
 }
 
 .state-msg {
@@ -136,7 +137,9 @@ body {
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
   font-family: inherit;
 }
 
@@ -193,6 +196,7 @@ body {
     background: #e0e0e0;
     color: #111;
   }
+
   .btn-secondary:hover:not(:disabled) {
     background: #ccc;
   }

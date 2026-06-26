@@ -41,6 +41,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 720px;
 }
 
 .header {
@@ -89,6 +90,7 @@ body {
   .notes-table th {
     border-bottom-color: #ddd;
   }
+
   .notes-table td {
     border-bottom-color: #eee;
   }
@@ -153,7 +155,9 @@ body {
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
   font-family: inherit;
 }
 
@@ -190,6 +194,7 @@ body {
     background: #e0e0e0;
     color: #111;
   }
+
   .btn-secondary:hover:not(:disabled) {
     background: #ccc;
   }

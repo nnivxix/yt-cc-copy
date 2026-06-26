@@ -3,9 +3,14 @@ import { ref, computed, onMounted } from "vue";
 import { browser } from "wxt/browser";
 import { useCc } from "./composables/useCc";
 import { useNote } from "./composables/useNote";
+import { Mode } from "./schema";
 
 const url = browser.runtime.getURL("/index.html");
 const isOnVideoPage = ref(false);
+
+const MODE: Mode = import.meta.env.WXT_MODE;
+
+const isLocal = computed(() => MODE == "LOCAL");
 
 const { status, errorMessage: ccErrorMessage, ccCopied, copyCC } = useCc();
 const {
@@ -32,7 +37,7 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <h2 class="title">YT CC Copy</h2>
+    <h2 class="title">YT CC Copy <b v-if="isLocal">(Local Mode)</b></h2>
 
     <template v-if="isOnVideoPage">
       <div class="btn-row">
@@ -68,15 +73,17 @@ onMounted(async () => {
         />
 
         <div class="note-footer">
-          <button class="btn btn-primary" :disabled="!noteText" @click="copyNote">
+          <button
+            class="btn btn-primary"
+            :disabled="!noteText"
+            @click="copyNote"
+          >
             {{ noteCopied ? "Copied" : "Copy Note" }}
           </button>
         </div>
       </div>
     </template>
-    <p v-else class="state-msg">
-      Open a YouTube video to use YT CC Copy.
-    </p>
+    <p v-else class="state-msg">Open a YouTube video to use YT CC Copy.</p>
 
     <div class="footer-message">
       <p v-if="errorText" class="error-text">

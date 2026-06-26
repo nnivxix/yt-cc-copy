@@ -141,7 +141,12 @@ onMounted(loadNote);
           <h1 class="video-title">
             {{ titleLoading ? "Loading title…" : note.title || "Untitled" }}
           </h1>
-          <span class="video-id">{{ videoId }}</span>
+          <a
+            :href="`https://www.youtube.com/watch?v=${videoId}`"
+            target="_blank"
+            class="video-id"
+            >{{ videoId }}</a
+          >
         </div>
       </div>
 

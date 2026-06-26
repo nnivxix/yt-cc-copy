@@ -48,7 +48,7 @@ A browser extension that lets you copy YouTube closed captions (CC) to your clip
 1. Build the extension for Firefox:
 
    ```sh
-   pnpm build:firefox
+   pnpm build:ff
    ```
 
    This will create a `.output/firefox-mv2` directory with the necessary files.

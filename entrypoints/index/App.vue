@@ -46,7 +46,7 @@ function excerpt(text: string, max = 100): string {
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -91,7 +91,11 @@ onMounted(loadNotes);
               loading="lazy"
             />
           </td>
-          <td class="col-id" @click="openNote(id)">{{ id }}</td>
+          <td class="col-id">
+            <a :href="`https://www.youtube.com/watch?v=${id}`" target="_blank">
+              {{ id }}
+            </a>
+          </td>
           <td class="col-excerpt" @click="openNote(id)">
             {{ excerpt(note.text) }}
           </td>
