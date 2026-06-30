@@ -69,6 +69,7 @@ export async function saveNote(
   const note: NoteData = {
     text,
     title: existing?.title,
+    thumbnailUrl: existing?.thumbnailUrl,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };

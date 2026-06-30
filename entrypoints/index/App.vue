@@ -1,7 +1,12 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { browser } from "wxt/browser";
-import { getAllNotes, deleteNote, updateNoteMeta, type NoteData } from "../../utils/storage";
+import {
+  getAllNotes,
+  deleteNote,
+  updateNoteMeta,
+  type NoteData,
+} from "../../utils/storage";
 import { fetchVideoMeta } from "../../utils/youtube-api";
 
 type Entry = [string, NoteData];
@@ -50,10 +55,6 @@ function openNote(videoId: string) {
   browser.tabs.update({ url });
 }
 
-function thumbnailUrl(videoId: string): string {
-  return `https://img.youtube.com/vi/${videoId}/default.jpg`;
-}
-
 function excerpt(text: string, max = 100): string {
   return text.length > max ? text.slice(0, max) + "…" : text;
 }
@@ -92,15 +93,15 @@ onMounted(loadNotes);
           <th class="col-id">Title</th>
           <th class="col-excerpt">Excerpt</th>
           <th class="col-date">Last Updated</th>
-          <th class="col-actions"></th>
+          <th class="col-actions">Action</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="[id, note] in entries" :key="id" class="note-row">
           <td class="col-thumb" @click="openNote(id)">
             <img
-              :src="note.thumbnailUrl || thumbnailUrl(id)"
-              alt="thumbnail"
+              :src="note.thumbnailUrl"
+              :alt="'thumbnail ' + id"
               class="thumb"
               loading="lazy"
             />
