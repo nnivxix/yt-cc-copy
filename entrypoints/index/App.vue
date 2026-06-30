@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { browser } from "wxt/browser";
-import { getAllNotes, deleteNote, type NoteData } from "../../utils/storage";
-import { ensureNoteTitle } from "../../utils/title";
+import { getAllNotes, deleteNote, updateNoteMeta, type NoteData } from "../../utils/storage";
+import { fetchVideoMeta } from "../../utils/youtube-api";
 
 type Entry = [string, NoteData];
 
@@ -16,8 +16,15 @@ async function loadNotes() {
     entries.value = await getAllNotes();
     for (const [id, note] of entries.value) {
       if (!note.title) {
-        const title = await ensureNoteTitle(id);
-        if (title) note.title = title;
+        const meta = await fetchVideoMeta(id);
+        if (meta) {
+          note.title = meta.title;
+          note.thumbnailUrl = meta.thumbnail_url;
+          await updateNoteMeta(id, {
+            title: meta.title,
+            thumbnailUrl: meta.thumbnail_url,
+          });
+        }
       }
     }
   } finally {
@@ -92,7 +99,7 @@ onMounted(loadNotes);
         <tr v-for="[id, note] in entries" :key="id" class="note-row">
           <td class="col-thumb" @click="openNote(id)">
             <img
-              :src="thumbnailUrl(id)"
+              :src="note.thumbnailUrl || thumbnailUrl(id)"
               alt="thumbnail"
               class="thumb"
               loading="lazy"

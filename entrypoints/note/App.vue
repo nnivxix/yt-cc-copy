@@ -4,10 +4,10 @@ import {
   getNote,
   saveNote,
   deleteNote,
-  updateNoteTitle,
+  updateNoteMeta,
   type NoteData,
 } from "../../utils/storage";
-import { ensureNoteTitle } from "../../utils/title";
+import { fetchVideoMeta } from "../../utils/youtube-api";
 
 const videoId = ref("");
 const note = ref<NoteData | null>(null);
@@ -28,13 +28,18 @@ function thumbnailUrl(id: string): string {
   return `https://img.youtube.com/vi/${id}/default.jpg`;
 }
 
-async function ensureTitle(videoId: string) {
+async function ensureMeta(id: string) {
   if (note.value?.title) return;
   titleLoading.value = true;
   try {
-    const title = await ensureNoteTitle(videoId);
-    if (title && note.value) {
-      note.value.title = title;
+    const meta = await fetchVideoMeta(id);
+    if (meta && note.value) {
+      note.value.title = meta.title;
+      note.value.thumbnailUrl = meta.thumbnail_url;
+      await updateNoteMeta(id, {
+        title: meta.title,
+        thumbnailUrl: meta.thumbnail_url,
+      });
     }
   } finally {
     titleLoading.value = false;
@@ -58,7 +63,7 @@ async function loadNote() {
     }
     note.value = data;
     editedText.value = data.text;
-    await ensureTitle(id);
+    await ensureMeta(id);
   } catch (e) {
     error.value = "Failed to load note.";
   } finally {
@@ -124,7 +129,7 @@ onMounted(loadNote);
 
     <template v-else-if="note">
       <div class="note-header">
-        <img :src="thumbnailUrl(videoId)" alt="thumbnail" class="thumb" />
+        <img :src="note.thumbnailUrl || thumbnailUrl(videoId)" alt="thumbnail" class="thumb" />
         <div class="note-meta">
           <h1 class="video-title">
             {{ titleLoading ? "Loading title…" : note.title || "Untitled" }}
