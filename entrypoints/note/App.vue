@@ -29,12 +29,6 @@ const hasChanges = computed(() => {
 });
 
 async function loadNote() {
-  /**
-   * 1. get video id from url
-   * 2. get note from storage
-   * 3. get meta data from youtube
-   * 4. combine/update note data
-   */
   loading.value = true;
   error.value = "";
   try {
