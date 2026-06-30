@@ -1,7 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { browser } from "wxt/browser";
-import { getAllNotes, deleteNote, type NoteData } from "../../utils/storage";
+import {
+  getAllNotes,
+  deleteNote,
+  updateNoteMeta,
+  type NoteData,
+} from "../../utils/storage";
+import { fetchVideoMeta } from "../../utils/youtube-api";
 
 type Entry = [string, NoteData];
 
@@ -13,6 +19,19 @@ async function loadNotes() {
   loading.value = true;
   try {
     entries.value = await getAllNotes();
+    for (const [id, note] of entries.value) {
+      if (!note.title) {
+        const meta = await fetchVideoMeta(id);
+        if (meta) {
+          note.title = meta.title;
+          note.thumbnailUrl = meta.thumbnail_url;
+          await updateNoteMeta(id, {
+            title: meta.title,
+            thumbnailUrl: meta.thumbnail_url,
+          });
+        }
+      }
+    }
   } finally {
     loading.value = false;
   }
@@ -34,10 +53,6 @@ function openNote(videoId: string) {
     `/note.html?id=${encodeURIComponent(videoId)}`,
   );
   browser.tabs.update({ url });
-}
-
-function thumbnailUrl(videoId: string): string {
-  return `https://img.youtube.com/vi/${videoId}/default.jpg`;
 }
 
 function excerpt(text: string, max = 100): string {
@@ -75,18 +90,18 @@ onMounted(loadNotes);
       <thead>
         <tr>
           <th class="col-thumb">Thumbnail</th>
-          <th class="col-id">Video ID</th>
+          <th class="col-id">Title</th>
           <th class="col-excerpt">Excerpt</th>
           <th class="col-date">Last Updated</th>
-          <th class="col-actions"></th>
+          <th class="col-actions">Action</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="[id, note] in entries" :key="id" class="note-row">
           <td class="col-thumb" @click="openNote(id)">
             <img
-              :src="thumbnailUrl(id)"
-              alt="thumbnail"
+              :src="note.thumbnailUrl"
+              :alt="'thumbnail ' + id"
               class="thumb"
               loading="lazy"
             />
@@ -95,6 +110,7 @@ onMounted(loadNotes);
             <a :href="`https://www.youtube.com/watch?v=${id}`" target="_blank">
               {{ id }}
             </a>
+            <p class="video-title">{{ note.title || "-" }}</p>
           </td>
           <td class="col-excerpt" @click="openNote(id)">
             {{ excerpt(note.text) }}
