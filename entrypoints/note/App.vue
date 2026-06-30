@@ -7,6 +7,7 @@ import {
   updateNoteTitle,
   type NoteData,
 } from "../../utils/storage";
+import { ensureNoteTitle } from "../../utils/title";
 
 const videoId = ref("");
 const note = ref<NoteData | null>(null);
@@ -27,26 +28,13 @@ function thumbnailUrl(id: string): string {
   return `https://img.youtube.com/vi/${id}/default.jpg`;
 }
 
-async function fetchTitle(id: string): Promise<string | null> {
-  const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.title ?? null;
-  } catch {
-    return null;
-  }
-}
-
 async function ensureTitle(videoId: string) {
   if (note.value?.title) return;
   titleLoading.value = true;
   try {
-    const title = await fetchTitle(videoId);
+    const title = await ensureNoteTitle(videoId);
     if (title && note.value) {
       note.value.title = title;
-      await updateNoteTitle(videoId, title);
     }
   } finally {
     titleLoading.value = false;
@@ -108,7 +96,7 @@ async function handleDelete() {
   deleting.value = true;
   try {
     await deleteNote(videoId.value);
-    window.close();
+    window.history.back();
   } finally {
     deleting.value = false;
   }

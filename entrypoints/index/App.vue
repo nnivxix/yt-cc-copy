@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { browser } from "wxt/browser";
 import { getAllNotes, deleteNote, type NoteData } from "../../utils/storage";
+import { ensureNoteTitle } from "../../utils/title";
 
 type Entry = [string, NoteData];
 
@@ -13,6 +14,12 @@ async function loadNotes() {
   loading.value = true;
   try {
     entries.value = await getAllNotes();
+    for (const [id, note] of entries.value) {
+      if (!note.title) {
+        const title = await ensureNoteTitle(id);
+        if (title) note.title = title;
+      }
+    }
   } finally {
     loading.value = false;
   }
@@ -75,7 +82,7 @@ onMounted(loadNotes);
       <thead>
         <tr>
           <th class="col-thumb">Thumbnail</th>
-          <th class="col-id">Video ID</th>
+          <th class="col-id">Title</th>
           <th class="col-excerpt">Excerpt</th>
           <th class="col-date">Last Updated</th>
           <th class="col-actions"></th>
@@ -95,6 +102,7 @@ onMounted(loadNotes);
             <a :href="`https://www.youtube.com/watch?v=${id}`" target="_blank">
               {{ id }}
             </a>
+            <p class="video-title">{{ note.title || "-" }}</p>
           </td>
           <td class="col-excerpt" @click="openNote(id)">
             {{ excerpt(note.text) }}
