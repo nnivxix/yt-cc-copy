@@ -2,7 +2,7 @@ import { browser } from "wxt/browser";
 import { defineContentScript } from "wxt/utils/define-content-script";
 
 export default defineContentScript({
-  matches: ["*://*.youtube.com/*"],
+  matches: ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
   main() {
     browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message?.action !== "GET_CC") return;

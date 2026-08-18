@@ -14,13 +14,14 @@ type Entry = [string, NoteData];
 const entries = ref<Entry[]>([]);
 const loading = ref(true);
 const deleting = ref<string | null>(null);
+const resyncing = ref<string | null>(null);
 
 async function loadNotes() {
   loading.value = true;
   try {
     entries.value = await getAllNotes();
     for (const [id, note] of entries.value) {
-      if (!note.title) {
+      if (!note.syncedAt) {
         const meta = await fetchVideoMeta(id);
         if (meta) {
           note.title = meta.title;
@@ -29,11 +30,33 @@ async function loadNotes() {
             title: meta.title,
             thumbnailUrl: meta.thumbnail_url,
           });
+          note.syncedAt = new Date().toISOString();
         }
       }
     }
+    entries.value.sort((a, b) => b[1].updatedAt.localeCompare(a[1].updatedAt));
   } finally {
     loading.value = false;
+  }
+}
+
+async function handleResync(videoId: string) {
+  resyncing.value = videoId;
+  try {
+    const meta = await fetchVideoMeta(videoId);
+    if (!meta) return;
+    const entry = entries.value.find(([id]) => id === videoId);
+    if (!entry) return;
+    const [, note] = entry;
+    note.title = meta.title;
+    note.thumbnailUrl = meta.thumbnail_url;
+    await updateNoteMeta(videoId, {
+      title: meta.title,
+      thumbnailUrl: meta.thumbnail_url,
+    });
+    note.syncedAt = new Date().toISOString();
+  } finally {
+    resyncing.value = null;
   }
 }
 
@@ -119,6 +142,13 @@ onMounted(loadNotes);
             {{ formatDate(note.updatedAt) }}
           </td>
           <td class="col-actions">
+            <button
+              class="btn btn-secondary btn-sm"
+              :disabled="resyncing === id"
+              @click="handleResync(id)"
+            >
+              {{ resyncing === id ? "…" : "Re-sync" }}
+            </button>
             <button
               class="btn btn-danger btn-sm"
               :disabled="deleting === id"

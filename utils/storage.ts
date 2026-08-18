@@ -6,6 +6,8 @@ export interface NoteData {
   text: string;
   title?: string;
   thumbnailUrl?: string;
+  /** ISO timestamp of last metadata sync with YouTube; absent/null = never synced. */
+  syncedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -70,6 +72,7 @@ export async function saveNote(
     text,
     title: existing?.title,
     thumbnailUrl: existing?.thumbnailUrl,
+    syncedAt: existing?.syncedAt,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
@@ -100,5 +103,6 @@ export async function updateNoteMeta(
   if (!note) return;
   if (meta.title !== undefined) note.title = meta.title;
   if (meta.thumbnailUrl !== undefined) note.thumbnailUrl = meta.thumbnailUrl;
+  note.syncedAt = new Date().toISOString();
   await browser.storage.local.set({ [videoId]: note });
 }

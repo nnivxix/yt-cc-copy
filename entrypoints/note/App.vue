@@ -1,20 +1,18 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
-import {
-  getNote,
-  saveNote,
-  deleteNote,
-  updateNoteMeta,
-  type NoteData,
-} from "../../utils/storage";
+import { browser } from "wxt/browser";
+import { getNote, saveNote, deleteNote, updateNoteMeta, type NoteData } from "../../utils/storage";
 import { fetchVideoMeta } from "../../utils/youtube-api";
+import { useCopy } from "../popup/composables/useCopy";
+
+const { copied, copy } = useCopy();
 
 const note = ref<NoteData | null>(null);
 const editedText = ref("");
 const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
-const copied = ref(false);
+const resyncing = ref(false);
 const error = ref("");
 
 const videoId = computed(() => {
@@ -41,14 +39,17 @@ async function loadNote() {
       throw new Error("Note not found.");
     }
 
-    const meta = await fetchVideoMeta(videoId.value);
-    if (meta && note.value) {
-      note.value.title = meta.title;
-      note.value.thumbnailUrl = meta.thumbnail_url;
-      await updateNoteMeta(videoId.value, {
-        title: meta.title,
-        thumbnailUrl: meta.thumbnail_url,
-      });
+    if (!note.value.syncedAt) {
+      const meta = await fetchVideoMeta(videoId.value);
+      if (meta && note.value) {
+        note.value.title = meta.title;
+        note.value.thumbnailUrl = meta.thumbnail_url;
+        await updateNoteMeta(videoId.value, {
+          title: meta.title,
+          thumbnailUrl: meta.thumbnail_url,
+        });
+        note.value.syncedAt = new Date().toISOString();
+      }
     }
     editedText.value = note.value?.text;
   } catch (e) {
@@ -71,15 +72,7 @@ async function handleSave() {
 }
 
 async function handleCopy() {
-  try {
-    await navigator.clipboard.writeText(editedText.value);
-    copied.value = true;
-    setTimeout(() => {
-      copied.value = false;
-    }, 3000);
-  } catch {
-    // ignore
-  }
+  await copy(editedText.value);
 }
 
 async function handleDelete() {
@@ -88,14 +81,32 @@ async function handleDelete() {
   deleting.value = true;
   try {
     await deleteNote(videoId.value);
-    window.history.back();
+    browser.tabs.update({ url: browser.runtime.getURL("/index.html") });
   } finally {
     deleting.value = false;
   }
 }
 
+async function handleResync() {
+  if (!videoId.value || !note.value) return;
+  resyncing.value = true;
+  try {
+    const meta = await fetchVideoMeta(videoId.value);
+    if (!meta) return;
+    note.value.title = meta.title;
+    note.value.thumbnailUrl = meta.thumbnail_url;
+    await updateNoteMeta(videoId.value, {
+      title: meta.title,
+      thumbnailUrl: meta.thumbnail_url,
+    });
+    note.value.syncedAt = new Date().toISOString();
+  } finally {
+    resyncing.value = false;
+  }
+}
+
 function handleBack() {
-  window.history.back();
+  browser.tabs.update({ url: browser.runtime.getURL("/index.html") });
 }
 
 onMounted(loadNote);
@@ -126,29 +137,25 @@ onMounted(loadNote);
       </div>
 
       <div class="editor-section">
-        <textarea
-          v-model="editedText"
-          class="note-area"
-          placeholder="Note content…"
-        ></textarea>
+        <textarea v-model="editedText" class="note-area" placeholder="Note content…"></textarea>
       </div>
 
       <div class="actions">
-        <button
-          class="btn btn-primary"
-          :disabled="saving || !hasChanges"
-          @click="handleSave"
-        >
+        <button class="btn btn-primary" :disabled="saving || !hasChanges" @click="handleSave">
           {{ saving ? "Saving…" : "Save" }}
         </button>
         <button class="btn btn-secondary" @click="handleCopy">
           {{ copied ? "Copied" : "Copy" }}
         </button>
         <button
-          class="btn btn-danger"
-          :disabled="deleting"
-          @click="handleDelete"
+          class="btn btn-secondary"
+          :disabled="resyncing"
+          @click="handleResync"
+          title="resync meta data info from YouTube"
         >
+          {{ resyncing ? "Syncing…" : "Re-sync" }}
+        </button>
+        <button class="btn btn-danger" :disabled="deleting" @click="handleDelete">
           {{ deleting ? "…" : "Delete" }}
         </button>
       </div>
