@@ -17,6 +17,7 @@ const editedText = ref("");
 const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
+const resyncing = ref(false);
 const error = ref("");
 
 const videoId = computed(() => {
@@ -43,14 +44,17 @@ async function loadNote() {
       throw new Error("Note not found.");
     }
 
-    const meta = await fetchVideoMeta(videoId.value);
-    if (meta && note.value) {
-      note.value.title = meta.title;
-      note.value.thumbnailUrl = meta.thumbnail_url;
-      await updateNoteMeta(videoId.value, {
-        title: meta.title,
-        thumbnailUrl: meta.thumbnail_url,
-      });
+    if (!note.value.syncedAt) {
+      const meta = await fetchVideoMeta(videoId.value);
+      if (meta && note.value) {
+        note.value.title = meta.title;
+        note.value.thumbnailUrl = meta.thumbnail_url;
+        await updateNoteMeta(videoId.value, {
+          title: meta.title,
+          thumbnailUrl: meta.thumbnail_url,
+        });
+        note.value.syncedAt = new Date().toISOString();
+      }
     }
     editedText.value = note.value?.text;
   } catch (e) {
@@ -85,6 +89,24 @@ async function handleDelete() {
     window.history.back();
   } finally {
     deleting.value = false;
+  }
+}
+
+async function handleResync() {
+  if (!videoId.value || !note.value) return;
+  resyncing.value = true;
+  try {
+    const meta = await fetchVideoMeta(videoId.value);
+    if (!meta) return;
+    note.value.title = meta.title;
+    note.value.thumbnailUrl = meta.thumbnail_url;
+    await updateNoteMeta(videoId.value, {
+      title: meta.title,
+      thumbnailUrl: meta.thumbnail_url,
+    });
+    note.value.syncedAt = new Date().toISOString();
+  } finally {
+    resyncing.value = false;
   }
 }
 
@@ -137,6 +159,13 @@ onMounted(loadNote);
         </button>
         <button class="btn btn-secondary" @click="handleCopy">
           {{ copied ? "Copied" : "Copy" }}
+        </button>
+        <button
+          class="btn btn-secondary"
+          :disabled="resyncing"
+          @click="handleResync"
+        >
+          {{ resyncing ? "Syncing…" : "Re-sync" }}
         </button>
         <button
           class="btn btn-danger"
