@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { browser } from "wxt/browser";
+import { isYouTubeVideoPage } from "../../utils/youtube-url";
 import { useCc } from "./composables/useCc";
 import { useNote } from "./composables/useNote";
 import { Mode } from "./schema";
@@ -30,7 +31,7 @@ const errorText = computed(
 
 onMounted(async () => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  isOnVideoPage.value = !!tab?.url?.includes("youtube.com/watch");
+  isOnVideoPage.value = !!(tab?.url && isYouTubeVideoPage(tab.url));
   if (isOnVideoPage.value) loadNote();
 });
 </script>

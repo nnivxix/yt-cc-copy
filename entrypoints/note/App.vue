@@ -8,13 +8,15 @@ import {
   type NoteData,
 } from "../../utils/storage";
 import { fetchVideoMeta } from "../../utils/youtube-api";
+import { useCopy } from "../popup/composables/useCopy";
+
+const { copied, copy } = useCopy();
 
 const note = ref<NoteData | null>(null);
 const editedText = ref("");
 const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
-const copied = ref(false);
 const error = ref("");
 
 const videoId = computed(() => {
@@ -71,15 +73,7 @@ async function handleSave() {
 }
 
 async function handleCopy() {
-  try {
-    await navigator.clipboard.writeText(editedText.value);
-    copied.value = true;
-    setTimeout(() => {
-      copied.value = false;
-    }, 3000);
-  } catch {
-    // ignore
-  }
+  await copy(editedText.value);
 }
 
 async function handleDelete() {
