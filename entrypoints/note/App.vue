@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
+import { browser } from "wxt/browser";
 import {
   getNote,
   saveNote,
@@ -86,7 +87,7 @@ async function handleDelete() {
   deleting.value = true;
   try {
     await deleteNote(videoId.value);
-    window.history.back();
+    browser.tabs.update({ url: browser.runtime.getURL("/index.html") });
   } finally {
     deleting.value = false;
   }
@@ -111,7 +112,7 @@ async function handleResync() {
 }
 
 function handleBack() {
-  window.history.back();
+  browser.tabs.update({ url: browser.runtime.getURL("/index.html") });
 }
 
 onMounted(loadNote);

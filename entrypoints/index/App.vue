@@ -34,6 +34,7 @@ async function loadNotes() {
         }
       }
     }
+    entries.value.sort((a, b) => b[1].updatedAt.localeCompare(a[1].updatedAt));
   } finally {
     loading.value = false;
   }
