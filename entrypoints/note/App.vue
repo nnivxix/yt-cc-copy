@@ -4,11 +4,11 @@ import {
   getNote,
   saveNote,
   deleteNote,
-  updateNoteMeta,
+  updateNoteTitle,
   type NoteData,
 } from "../../utils/storage";
-import { fetchVideoMeta } from "../../utils/youtube-api";
 
+const videoId = ref("");
 const note = ref<NoteData | null>(null);
 const editedText = ref("");
 const loading = ref(true);
@@ -16,43 +16,63 @@ const saving = ref(false);
 const deleting = ref(false);
 const copied = ref(false);
 const error = ref("");
+const titleLoading = ref(false);
 
-const videoId = computed(() => {
+function getVideoIdFromUrl(): string {
   const params = new URLSearchParams(window.location.search);
-
   return params.get("id") ?? "";
-});
+}
 
-const hasChanges = computed(() => {
-  if (!note.value) return false;
-  return editedText.value !== note.value.text;
-});
+function thumbnailUrl(id: string): string {
+  return `https://img.youtube.com/vi/${id}/default.jpg`;
+}
+
+async function fetchTitle(id: string): Promise<string | null> {
+  const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.title ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function ensureTitle(videoId: string) {
+  if (note.value?.title) return;
+  titleLoading.value = true;
+  try {
+    const title = await fetchTitle(videoId);
+    if (title && note.value) {
+      note.value.title = title;
+      await updateNoteTitle(videoId, title);
+    }
+  } finally {
+    titleLoading.value = false;
+  }
+}
 
 async function loadNote() {
   loading.value = true;
   error.value = "";
   try {
-    if (!videoId.value) {
-      throw new Error("No video ID specified.");
+    const id = getVideoIdFromUrl();
+    if (!id) {
+      error.value = "No video ID specified.";
+      return;
     }
-
-    note.value = await getNote(videoId.value);
-    if (!note.value) {
-      throw new Error("Note not found.");
+    videoId.value = id;
+    const data = await getNote(id);
+    if (!data) {
+      error.value = "Note not found.";
+      return;
     }
-
-    const meta = await fetchVideoMeta(videoId.value);
-    if (meta && note.value) {
-      note.value.title = meta.title;
-      note.value.thumbnailUrl = meta.thumbnail_url;
-      await updateNoteMeta(videoId.value, {
-        title: meta.title,
-        thumbnailUrl: meta.thumbnail_url,
-      });
-    }
-    editedText.value = note.value?.text;
+    note.value = data;
+    editedText.value = data.text;
+    await ensureTitle(id);
   } catch (e) {
-    error.value = e instanceof Error ? e.message : "Failed to load note.";
+    error.value = "Failed to load note.";
   } finally {
     loading.value = false;
   }
@@ -88,7 +108,7 @@ async function handleDelete() {
   deleting.value = true;
   try {
     await deleteNote(videoId.value);
-    window.history.back();
+    window.close();
   } finally {
     deleting.value = false;
   }
@@ -97,6 +117,11 @@ async function handleDelete() {
 function handleBack() {
   window.history.back();
 }
+
+const hasChanges = computed(() => {
+  if (!note.value) return false;
+  return editedText.value !== note.value.text;
+});
 
 onMounted(loadNote);
 </script>
@@ -111,10 +136,10 @@ onMounted(loadNote);
 
     <template v-else-if="note">
       <div class="note-header">
-        <img :src="note.thumbnailUrl" alt="thumbnail" class="thumb" />
+        <img :src="thumbnailUrl(videoId)" alt="thumbnail" class="thumb" />
         <div class="note-meta">
           <h1 class="video-title">
-            {{ note.title || "Untitled" }}
+            {{ titleLoading ? "Loading title…" : note.title || "Untitled" }}
           </h1>
           <a
             :href="`https://www.youtube.com/watch?v=${videoId}`"

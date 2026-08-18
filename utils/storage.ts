@@ -5,7 +5,6 @@ const INDEX_KEY = "_yt_cc_notes_index";
 export interface NoteData {
   text: string;
   title?: string;
-  thumbnailUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,7 +68,6 @@ export async function saveNote(
   const note: NoteData = {
     text,
     title: existing?.title,
-    thumbnailUrl: existing?.thumbnailUrl,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
@@ -92,13 +90,12 @@ export async function deleteNote(videoId: string): Promise<void> {
   }
 }
 
-export async function updateNoteMeta(
+export async function updateNoteTitle(
   videoId: string,
-  meta: { title?: string; thumbnailUrl?: string },
+  title: string,
 ): Promise<void> {
   const note = await getNote(videoId);
   if (!note) return;
-  if (meta.title !== undefined) note.title = meta.title;
-  if (meta.thumbnailUrl !== undefined) note.thumbnailUrl = meta.thumbnailUrl;
+  note.title = title;
   await browser.storage.local.set({ [videoId]: note });
 }
