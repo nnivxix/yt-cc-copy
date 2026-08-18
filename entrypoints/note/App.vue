@@ -1,13 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
 import { browser } from "wxt/browser";
-import {
-  getNote,
-  saveNote,
-  deleteNote,
-  updateNoteMeta,
-  type NoteData,
-} from "../../utils/storage";
+import { getNote, saveNote, deleteNote, updateNoteMeta, type NoteData } from "../../utils/storage";
 import { fetchVideoMeta } from "../../utils/youtube-api";
 import { useCopy } from "../popup/composables/useCopy";
 
@@ -143,19 +137,11 @@ onMounted(loadNote);
       </div>
 
       <div class="editor-section">
-        <textarea
-          v-model="editedText"
-          class="note-area"
-          placeholder="Note content…"
-        ></textarea>
+        <textarea v-model="editedText" class="note-area" placeholder="Note content…"></textarea>
       </div>
 
       <div class="actions">
-        <button
-          class="btn btn-primary"
-          :disabled="saving || !hasChanges"
-          @click="handleSave"
-        >
+        <button class="btn btn-primary" :disabled="saving || !hasChanges" @click="handleSave">
           {{ saving ? "Saving…" : "Save" }}
         </button>
         <button class="btn btn-secondary" @click="handleCopy">
@@ -165,14 +151,11 @@ onMounted(loadNote);
           class="btn btn-secondary"
           :disabled="resyncing"
           @click="handleResync"
+          title="resync meta data info from YouTube"
         >
           {{ resyncing ? "Syncing…" : "Re-sync" }}
         </button>
-        <button
-          class="btn btn-danger"
-          :disabled="deleting"
-          @click="handleDelete"
-        >
+        <button class="btn btn-danger" :disabled="deleting" @click="handleDelete">
           {{ deleting ? "…" : "Delete" }}
         </button>
       </div>
