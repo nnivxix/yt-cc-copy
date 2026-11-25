@@ -5,6 +5,7 @@ import { isYouTubeVideoPage, videoKey } from "../../utils/youtube-url";
 import { getNote } from "../../utils/storage";
 import { useCc } from "./composables/useCc";
 import { useNote } from "./composables/useNote";
+import { useTranslate } from "./composables/useTranslate";
 import { Mode } from "./schema";
 
 const url = browser.runtime.getURL("/index.html");
@@ -16,7 +17,13 @@ const MODE: Mode = import.meta.env.WXT_MODE;
 
 const isLocal = computed(() => MODE == "LOCAL");
 
-const { status, errorMessage: ccErrorMessage, ccCopied, copyCC } = useCc();
+const {
+  status,
+  errorMessage: ccErrorMessage,
+  ccCopied,
+  copyCC,
+  getCC,
+} = useCc();
 const {
   errorMessage: noteErrorMessage,
   noteText,
@@ -27,8 +34,26 @@ const {
   clearNote,
   loadNote,
 } = useNote();
+const {
+  target: translateTarget,
+  languages: translateLanguages,
+  translating,
+  errorMessage: translateErrorMessage,
+  setTarget: setTranslateTarget,
+  translate,
+} = useTranslate(getCC);
 
-const errorText = computed(() => ccErrorMessage.value || noteErrorMessage.value);
+const errorText = computed(
+  () =>
+    ccErrorMessage.value ||
+    noteErrorMessage.value ||
+    translateErrorMessage.value,
+);
+
+function onTranslateTargetChange(event: Event) {
+  const select = event.target as HTMLSelectElement;
+  setTranslateTarget(select.value);
+}
 
 onMounted(async () => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -57,6 +82,31 @@ onMounted(async () => {
         <button class="btn btn-secondary" :disabled="status === 'loading'" @click="saveToNote">
           {{ noteStatus === "success" ? "Added" : "Add to Note" }}
         </button>
+      </div>
+
+      <div class="translate-row">
+        <button
+          class="btn btn-secondary"
+          :disabled="status === 'loading' || translating"
+          @click="translate"
+        >
+          {{ translating ? "Opening..." : "Translate" }}
+        </button>
+        <select
+          class="select-lang"
+          :value="translateTarget"
+          :disabled="translating"
+          aria-label="Translate to"
+          @change="onTranslateTargetChange"
+        >
+          <option
+            v-for="lang in translateLanguages"
+            :key="lang.code"
+            :value="lang.code"
+          >
+            {{ lang.label }}
+          </option>
+        </select>
       </div>
 
       <div class="note-section">
