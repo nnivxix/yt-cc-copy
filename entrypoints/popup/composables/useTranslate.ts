@@ -6,6 +6,7 @@ import {
   type TranslateLanguage,
 } from "../../../utils/languages";
 import { getSettings, saveSettings } from "../../../utils/settings";
+import { findGoogleTranslateTab } from "../../../utils/tabs";
 
 export const useTranslate = (getCC: () => Promise<string | null>) => {
   const target = ref("id");
@@ -41,6 +42,31 @@ export const useTranslate = (getCC: () => Promise<string | null>) => {
     }
   }
 
+  async function openTranslate(url: string) {
+    try {
+      const currentWindow = await browser.windows.getCurrent();
+      const existing = await findGoogleTranslateTab(currentWindow?.id);
+
+      if (existing?.id != null) {
+        await browser.tabs.update(existing.id, { url, active: true });
+        if (existing.windowId != null) {
+          try {
+            await browser.windows.update(existing.windowId, {
+              focused: true,
+            });
+          } catch {
+            // Focusing the window is best-effort.
+          }
+        }
+        return;
+      }
+    } catch {
+      // Fall through to opening a new tab.
+    }
+
+    await browser.tabs.create({ url });
+  }
+
   async function translate() {
     translating.value = true;
     errorMessage.value = "";
@@ -49,9 +75,7 @@ export const useTranslate = (getCC: () => Promise<string | null>) => {
       // getCC surfaces its own CC-disabled / CC-empty errors.
       if (!text) return;
 
-      await browser.tabs.create({
-        url: buildTranslateUrl(text, target.value),
-      });
+      await openTranslate(buildTranslateUrl(text, target.value));
     } catch {
       setError("Could not open Google Translate. Please try again.");
     } finally {
