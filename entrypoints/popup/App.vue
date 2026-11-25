@@ -75,16 +75,13 @@ onMounted(async () => {
     <h2 class="title">YT CC Copy <b v-if="isLocal">(Local Mode)</b></h2>
 
     <template v-if="isOnVideoPage">
-      <div class="btn-row">
+      <div class="action-grid">
         <button class="btn btn-primary" :disabled="status === 'loading'" @click="copyCC">
           {{ status === "loading" ? "…" : ccCopied ? "Copied" : "Copy CC" }}
         </button>
         <button class="btn btn-secondary" :disabled="status === 'loading'" @click="saveToNote">
           {{ noteStatus === "success" ? "Added" : "Add to Note" }}
         </button>
-      </div>
-
-      <div class="translate-row">
         <button
           class="btn btn-secondary"
           :disabled="status === 'loading' || translating"
