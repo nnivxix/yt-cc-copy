@@ -103,6 +103,21 @@ a {
   color: var(--muted);
 }
 
+.version-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  vertical-align: middle;
+}
+
 h1 {
   margin: 10px 0 14px;
   line-height: 1.12;
