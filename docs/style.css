@@ -40,6 +40,13 @@ a {
   margin: 0 auto;
 }
 
+site-hero,
+site-features,
+site-install,
+site-faq {
+  display: block;
+}
+
 .site-header {
   position: sticky;
   top: 0;
