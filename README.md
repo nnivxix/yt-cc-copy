@@ -2,6 +2,29 @@
 
 A browser extension that lets you copy YouTube closed captions (CC) to your clipboard and save them as notes per video.
 
+## Features
+
+- **Copy CC Instantly** — Grab the currently visible closed captions from any YouTube video with one click. Live caption segments are read directly from the player and copied to your clipboard, with smart errors when CC is disabled or no captions are visible.
+- **Translate Captions** — Send the currently visible captions to Google Translate in a new tab with one click. The target language is picked from a dropdown in the popup and remembered for next time (default Indonesian); Google detects the source language automatically.
+- **Save to Note** — Append captured captions to a note automatically tied to the active video by its ID. Each video gets its own dedicated note, so your research stays organized without manual labeling.
+- **Per-Video Note Management** — Notes are keyed by video ID and persist locally in your browser. They survive restarts and require no account or cloud sync — your data stays on your device.
+- **Copy Full Note** — Pull the entire saved note for a video to your clipboard in one action, ready to paste into docs, chat, or research tools.
+- **Clear Notes** — Remove the saved note for the current video with a single click from the popup, without leaving YouTube.
+- **Manage Notes Dashboard** — A dedicated page lists every saved note with thumbnail, auto-fetched video title, text excerpt, last-updated timestamp, and per-note **Re-sync** and **Delete** actions.
+- **Edit Notes Inline** — Each note opens in its own editor page where you can edit text, save, copy, re-sync video metadata, delete, or jump back to the video on YouTube.
+- **Automatic Video Metadata Sync** — Video titles and thumbnails are fetched from YouTube's public oEmbed API on first open, then cached locally. A manual **Re-sync** action refreshes metadata on demand, tracked by a `syncedAt` timestamp.
+- **Broad YouTube URL Support** — Works across `/watch`, `/embed`, and `/shorts` URLs, including privacy-friendly `youtube-nocookie.com` embeds.
+- **Cross-Browser Support** — Officially published on the [Chrome Web Store](https://chromewebstore.google.com/detail/youtube-cc-copy/phogekaakimfbfjolkjcnlbjdoipjgnf) (Manifest V3) and [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/youtube-cc-copy/) (Manifest V2), built on the WXT framework.
+- **Local-First & Private** — All notes live in `browser.storage.local`. No servers, no accounts, no telemetry. Video metadata is fetched directly from YouTube's public oEmbed endpoint (no API key required). Caption data stays on your device unless you explicitly click **Translate**, which opens Google Translate with the caption text.
+- **Clean, Focused Popup UI** — One-click **Copy CC**, **Add to Note**, and **Translate** actions, a read-only note preview with clear empty state, contextual status feedback ("Copied", "Added", loading), inline error messages with auto-dismiss, and quick links to Manage/Edit Notes and GitHub issues.
+
+## Technical Highlights
+
+- **Stack** — Vue 3 + TypeScript + WXT.
+- **Storage** — Notes indexed via a local index for fast listing and ordered retrieval.
+- **Backward Compatible** — Auto-migrates legacy plain-string notes to the structured `NoteData` format (with `createdAt`/`updatedAt` timestamps).
+- **Content Script** — Lightweight listener that extracts `.ytp-caption-segment` text only when requested, with zero overhead when idle.
+
 ## Download
 
 <p align="center">
@@ -63,7 +86,8 @@ A browser extension that lets you copy YouTube closed captions (CC) to your clip
 2. Click the extension icon in the toolbar.
 3. Click **Copy CC** to copy the current visible captions to your clipboard.
 4. Click **Save to Note** to append captions to a per-video note.
-5. Use **Copy Note** to copy the full saved note, or **Clear** to remove it.
+5. Click **Translate** to open the current captions in Google Translate; use the dropdown next to it to change the target language (saved for next time).
+6. Use **Copy Note** to copy the full saved note, or **Clear** to remove it.
 
 ## Contributing
 

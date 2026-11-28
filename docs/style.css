@@ -40,6 +40,13 @@ a {
   margin: 0 auto;
 }
 
+site-hero,
+site-features,
+site-install,
+site-faq {
+  display: block;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -101,6 +108,21 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--muted);
+}
+
+.version-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  vertical-align: middle;
 }
 
 h1 {

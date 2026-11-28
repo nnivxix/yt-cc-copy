@@ -50,8 +50,9 @@ body {
   text-align: center;
 }
 
-.btn-row {
-  display: flex;
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -89,6 +90,28 @@ body {
 
 .btn-secondary:hover:not(:disabled) {
   background: #444;
+}
+
+.action-grid .btn {
+  width: 100%;
+}
+
+.select-lang {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 6px;
+  font-family: inherit;
+  font-size: 0.82em;
+  color: inherit;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.select-lang:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .note-section {
@@ -172,6 +195,11 @@ body {
   }
   .note-section {
     border-top-color: #ddd;
+  }
+  .select-lang {
+    background: #f5f5f5;
+    border-color: #ccc;
+    color: #213547;
   }
 }
 
